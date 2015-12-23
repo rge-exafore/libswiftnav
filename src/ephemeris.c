@@ -249,7 +249,7 @@ s8 calc_sat_state(const ephemeris_t *e, gps_time_t t,
  *       of just es[prn].valid.
  *
  * \param e Ephemeris struct
- * \param t
+ * \param t Current time
  * \return 1 if the ephemeris is valid and not too old.
  *         0 otherwise.
  */
@@ -548,6 +548,12 @@ static bool ephemeris_kepler_equal(const ephemeris_kepler_t *a,
          (a->toc.tow == b->toc.tow);
 }
 
+/** Are the two ephemerides the same?
+ *
+ * \param a First ephemeris
+ * \param b Second ephemeris
+ * \return true if they are equal
+ */
 bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b)
 {
   if (!sid_is_equal(a->sid, b->sid) ||
