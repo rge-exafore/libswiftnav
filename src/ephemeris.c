@@ -244,29 +244,38 @@ u8 ephemeris_valid(const ephemeris_t *eph, const gps_time_t *t)
   assert(eph != NULL);
   assert(t != NULL);
 
-  if (!eph->valid) {
+  return ephemeris_is_valid(eph->valid, eph->fit_interval, &(eph->toe), t);
+}
+
+u8 ephemeris_is_valid(const u8 v, const u8 fit_interval,
+                      const gps_time_t* toe, const gps_time_t *t)
+{
+  assert(t != NULL);
+  assert(toe != NULL);
+
+  if(!v) {
     return 0;
   }
 
-  if (eph->fit_interval <= 0) {
+  if(fit_interval <= 0) {
     log_warn("ephemeris_valid used with 0 eph->fit_interval");
     return 0;
   }
 
   /*
-   *Ephemeris did not get time-stammped when it was received.
+   *Ephemeris did not get time-stamped when it was received.
    */
-  if (eph->toe.wn == 0) {
+  if(toe->wn == 0) {
     return 0;
   }
 
   /* Seconds from the time from ephemeris reference epoch (toe) */
-  double dt = gpsdifftime(t, &eph->toe);
+  double dt = gpsdifftime(t, toe);
 
   /* TODO: this doesn't exclude ephemerides older than a week so could be made
    * better. */
   /* If dt is greater than fit_interval / 2 hours our ephemeris isn't valid. */
-  if (fabs(dt) > ((u32)eph->fit_interval / 2) * 60 * 60) {
+  if (fabs(dt) > ((u32)fit_interval / 2) * 60 * 60) {
     return 0;
   }
 
