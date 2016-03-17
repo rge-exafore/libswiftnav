@@ -20,6 +20,7 @@
 #include <libswiftnav/constants.h>
 #include <libswiftnav/bits.h>
 #include <libswiftnav/nav_msg.h>
+#include <libswiftnav/l2c_capability.h>
 
 void nav_msg_init(nav_msg_t *n)
 {
@@ -222,16 +223,22 @@ static u8 nav_parity(u32 *word)
 bool subframe_ready(nav_msg_t *n) {
   return (n->subframe_start_index != 0);
 }
+s8 process_subframe(nav_msg_t *n, gps_l1ca_decoded_data_t *e)
+{
+  gnss_signal_t this_sid;
 
-s8 process_subframe(nav_msg_t *n, ephemeris_t *e) {
   // Check parity and parse out the ephemeris from the most recently received subframe
 
-  if (!e) {
+  if (!e || !e->ephemeris) {
     log_error("process_subframe: CALLED WITH e = NULL!");
     n->subframe_start_index = 0;  // Mark the subframe as processed
     n->next_subframe_id = 1;      // Make sure we start again next time
     return -1;
   }
+
+  this_sid = e->ephemeris->sid;
+  e->ephemeris_upd_flag = false;
+  e->gps_l2c_sv_capability_upd_flag = false;
 
   // First things first - check the parity, and invert bits if necessary.
   // process the data, skipping the first word, TLM, and starting with HOW
@@ -242,21 +249,21 @@ s8 process_subframe(nav_msg_t *n, ephemeris_t *e) {
     BIT_POLARITY_INVERTED;
   if ((prev_bit_polarity != BIT_POLARITY_UNKNOWN)
       && (prev_bit_polarity != n->bit_polarity)) {
-    log_error_sid(e->sid, "Nav phase flip - half cycle slip detected, "
+    log_error_sid(this_sid, "Nav phase flip - half cycle slip detected, "
                   "but not corrected");
     /* TODO: declare phase ambiguity to IAR */
   }
 
   /* Complain if buffer overrun */
   if (n->overrun) {
-    log_error_sid(e->sid, "nav_msg subframe buffer overrun!");
+    log_error_sid(this_sid, "nav_msg subframe buffer overrun!");
     n->overrun = false;
   }
 
   /* Extract word 2, and the last two parity bits of word 1 */
   u32 sf_word2 = extract_word(n, 28, 32, 0);
   if (nav_parity(&sf_word2)) {
-    log_info_sid(e->sid, "subframe parity mismatch (word 2)");
+    log_info_sid(this_sid, "subframe parity mismatch (word 2)");
     n->subframe_start_index = 0;  // Mark the subframe as processed
     n->next_subframe_id = 1;      // Make sure we start again next time
     return -2;
@@ -264,18 +271,18 @@ s8 process_subframe(nav_msg_t *n, ephemeris_t *e) {
 
   n->alert = sf_word2 >> 12 & 0x01; // Alert flag, bit 18
   if (n->alert) {
-    log_warn_sid(e->sid, "alert flag set! Ignoring satellite.");
+    log_warn_sid(this_sid, "alert flag set! Ignoring satellite.");
   }
 
   u8 sf_id = sf_word2 >> 8 & 0x07;    // Which of 5 possible subframes is it? bits 20-22
 
-  if (sf_id <= 3 && sf_id == n->next_subframe_id) {  // Is it the one that we want next?
+  if (sf_id <= 4 && sf_id == n->next_subframe_id) {  // Is it the one that we want next?
 
     for (int w = 0; w < 8; w++) {   // For words 3..10
       n->frame_words[sf_id-1][w] = extract_word(n, 30*(w+2) - 2, 32, 0);    // Get the bits
       // MSBs are D29* and D30*.  LSBs are D1...D30
       if (nav_parity(&n->frame_words[sf_id-1][w])) {  // Check parity and invert bits if D30*
-        log_info_sid(e->sid, "subframe parity mismatch (word %d)", w+3);
+        log_info_sid(this_sid, "subframe parity mismatch (word %d)", w+3);
         n->next_subframe_id = 1;      // Make sure we start again next time
         n->subframe_start_index = 0;  // Mark the subframe as processed
         return -3;
@@ -285,14 +292,29 @@ s8 process_subframe(nav_msg_t *n, ephemeris_t *e) {
     n->next_subframe_id++;
 
     if (sf_id == 3) {
-      // Got all of subframes 1 to 3
-      n->next_subframe_id = 1;      // Make sure we start again next time
 
       // Now let's actually decode the ephemeris...
-      decode_ephemeris(n->frame_words, e);
+      decode_ephemeris(n->frame_words, e->ephemeris);
+      e->ephemeris_upd_flag = true;
 
       return 1;
+    }
 
+    if (4 == sf_id) { /* parse Subframe 4 */
+       /*  get words 3-8 from 25th page (SV config
+       *  bits) */
+
+      /* check Word 3 bits 2..7 (63..69) for Page ID, see IS-200H, pg. 84
+       * Page 25 has ID 63, see IS-200H, pg. 109-110 */
+      if ((n->frame_words[3][3-3] >> (30-8) & 0x3f) == 63) {
+        decode_l2c_capability(n->frame_words[3], &(e->gps_l2c_sv_capability));
+        e->gps_l2c_sv_capability_upd_flag = true;
+      }
+
+      /* Got all of subframes 1 to 4 */
+      n->next_subframe_id = 1; /* Make sure we start again next time */
+
+      return 1;
     }
   } else {  // didn't get the subframe that we want next
       n->next_subframe_id = 1;      // Make sure we start again next time

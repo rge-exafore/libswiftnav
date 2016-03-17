@@ -46,6 +46,7 @@ else (CMAKE_CROSSCOMPILING)
       check_ionosphere.c
       check_signal.c
       check_track.c
+      check_decode_l2c_capability.c
       check_cnav.c
     )
 

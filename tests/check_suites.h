@@ -22,6 +22,7 @@ Suite* time_test_suite(void);
 Suite* ionosphere_suite(void);
 Suite* signal_test_suite(void);
 Suite* track_test_suite(void);
+Suite* l2c_capability_test_suite(void);
 Suite* cnav_test_suite(void);
 
 #endif /* CHECK_SUITES_H */

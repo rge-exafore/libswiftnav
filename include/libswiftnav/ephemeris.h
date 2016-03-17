@@ -62,7 +62,7 @@ u8 satellite_healthy(const ephemeris_t *eph);
 
 float decode_ura_index(const u8 index);
 u8 decode_fit_interval(u8 fit_interval_flag, u16 iodc);
-void decode_ephemeris(u32 frame_words[3][8], ephemeris_t *e);
+void decode_ephemeris(u32 frame_words[4][8], ephemeris_t *e);
 bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b);
 
 #endif /* LIBSWIFTNAV_EPHEMERIS_H */
