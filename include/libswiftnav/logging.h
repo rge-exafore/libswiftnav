@@ -33,7 +33,7 @@
  *
  * \{ */
 
-extern void log_(u8 level, const char *msg, ...) __attribute__ ((weak));
+void log_(u8 level, const char *file, const int line, const char *msg, ...) __attribute__ ((weak));
 
 #define LOG_EMERG       0       /* system is unusable */
 #define LOG_ALERT       1       /* action must be taken immediately */
@@ -44,40 +44,37 @@ extern void log_(u8 level, const char *msg, ...) __attribute__ ((weak));
 #define LOG_INFO        6       /* informational */
 #define LOG_DEBUG       7       /* debug-level messages */
 
-/** Log an emergency.
- * \param args `printf` style format and arguments.
- */
-#define log_emerg(args...) log_(LOG_EMERG, args)
+#define log_emerg(args...) log_(LOG_EMERG, __FILE__, __LINE__, args)
 
 /** Log an alert.
  * \param args `printf` style format and arguments.
  */
-#define log_alert(args...) log_(LOG_ALERT, args)
+#define log_alert(args...) log_(LOG_ALERT, __FILE__, __LINE__, args)
 
 /** Log a critical event.
  * \param args `printf` style format and arguments.
  */
-#define log_crit(args...) log_(LOG_CRIT, args)
+#define log_crit(args...) log_(LOG_CRIT, __FILE__, __LINE__, args)
 
 /** Log an error.
  * \param args `printf` style format and arguments.
  */
-#define log_error(args...) log_(LOG_ERROR, args)
+#define log_error(args...) log_(LOG_ERROR, __FILE__, __LINE__, args)
 
 /** Log a warning.
  * \param args `printf` style format and arguments.
  */
-#define log_warn(args...)  log_(LOG_WARN, args)
+#define log_warn(args...)  log_(LOG_WARN, __FILE__, __LINE__, args)
 
 /** Log a notice.
  * \param args `printf` style format and arguments.
  */
-#define log_notice(args...)  log_(LOG_NOTICE, args)
+#define log_notice(args...)  log_(LOG_NOTICE, __FILE__, __LINE__, args)
 
 /** Log an information message.
  * \param args `printf` style format and arguments.
  */
-#define log_info(args...)  log_(LOG_INFO, args)
+#define log_info(args...)  log_(LOG_INFO, __FILE__, __LINE__, args)
 
 /** Log a debugging message.
  * \param args `printf` style format and arguments.
@@ -85,7 +82,7 @@ extern void log_(u8 level, const char *msg, ...) __attribute__ ((weak));
 #define log_debug(args...)  \
 do {                        \
   if (DEBUG) {              \
-    log_(LOG_DEBUG, args);  \
+    log_(LOG_DEBUG, __FILE__, __LINE__, args);  \
   }                         \
 } while (0)
 

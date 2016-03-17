@@ -34,11 +34,11 @@ const char *level_string[] = {
  * \param level Log level
  * \param msg Log contents
  */
-void log_(u8 level, const char *msg, ...)
+void log_(u8 level, const char *file, const int line, const char *msg, ...)
 {
   va_list ap;
 
-  printf("%s: ", level_string[level]);
+  printf("%s:(%s:%d)", level_string[level], file, line);
   va_start(ap, msg);
   vprintf(msg, ap);
   va_end(ap);
