@@ -14,6 +14,7 @@
 #define LIBSWIFTNAV_LOGGING_H
 
 #include <stdio.h>
+#include <string.h>
 
 #include <libswiftnav/common.h>
 
@@ -33,6 +34,8 @@
  *
  * \{ */
 
+#define __FNAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
 void log_(u8 level, const char *file, const int line, const char *msg, ...) __attribute__ ((weak));
 
 #define LOG_EMERG       0       /* system is unusable */
@@ -44,37 +47,37 @@ void log_(u8 level, const char *file, const int line, const char *msg, ...) __at
 #define LOG_INFO        6       /* informational */
 #define LOG_DEBUG       7       /* debug-level messages */
 
-#define log_emerg(args...) log_(LOG_EMERG, __FILE__, __LINE__, args)
+#define log_emerg(args...) log_(LOG_EMERG, __FNAME__, __LINE__, args)
 
 /** Log an alert.
  * \param args `printf` style format and arguments.
  */
-#define log_alert(args...) log_(LOG_ALERT, __FILE__, __LINE__, args)
+#define log_alert(args...) log_(LOG_ALERT, __FNAME__, __LINE__, args)
 
 /** Log a critical event.
  * \param args `printf` style format and arguments.
  */
-#define log_crit(args...) log_(LOG_CRIT, __FILE__, __LINE__, args)
+#define log_crit(args...) log_(LOG_CRIT, __FNAME__, __LINE__, args)
 
 /** Log an error.
  * \param args `printf` style format and arguments.
  */
-#define log_error(args...) log_(LOG_ERROR, __FILE__, __LINE__, args)
+#define log_error(args...) log_(LOG_ERROR, __FNAME__, __LINE__, args)
 
 /** Log a warning.
  * \param args `printf` style format and arguments.
  */
-#define log_warn(args...)  log_(LOG_WARN, __FILE__, __LINE__, args)
+#define log_warn(args...)  log_(LOG_WARN, __FNAME__, __LINE__, args)
 
 /** Log a notice.
  * \param args `printf` style format and arguments.
  */
-#define log_notice(args...)  log_(LOG_NOTICE, __FILE__, __LINE__, args)
+#define log_notice(args...)  log_(LOG_NOTICE, __FNAME__, __LINE__, args)
 
 /** Log an information message.
  * \param args `printf` style format and arguments.
  */
-#define log_info(args...)  log_(LOG_INFO, __FILE__, __LINE__, args)
+#define log_info(args...)  log_(LOG_INFO, __FNAME__, __LINE__, args)
 
 /** Log a debugging message.
  * \param args `printf` style format and arguments.
@@ -82,7 +85,7 @@ void log_(u8 level, const char *file, const int line, const char *msg, ...) __at
 #define log_debug(args...)  \
 do {                        \
   if (DEBUG) {              \
-    log_(LOG_DEBUG, __FILE__, __LINE__, args);  \
+    log_(LOG_DEBUG, __FNAME__, __LINE__, args);  \
   }                         \
 } while (0)
 
