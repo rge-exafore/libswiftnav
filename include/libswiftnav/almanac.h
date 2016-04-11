@@ -20,7 +20,7 @@
  * \{ */
 
 /** Structure containing the GPS almanac for one satellite. */
-typedef struct {
+typedef struct __attribute__((packed)) {
   double ecc;   /**< Eccentricity (unitless) */
   double toa;   /**< Time of Applicability in seconds since Sunday. */
   double inc;   /**< Inclination in radians. */
@@ -35,7 +35,7 @@ typedef struct {
 } almanac_gps_t;
 
 /** Structure containing the SBAS almanac for one satellite. */
-typedef struct {
+typedef struct __attribute__((packed)) {
   u8 data_id;   /**< Data ID. */
 
   u16 x;        /**< X coordinate ECEF. */
@@ -49,7 +49,7 @@ typedef struct {
   u16 t0;       /**< Time of day [seconds]. */
 } almanac_sbas_t;
 
-typedef struct {
+typedef struct __attribute__((packed)) {
   gnss_signal_t sid; /**< Signal ID. */
   u8 healthy;   /**< Satellite health status. */
   u8 valid;     /**< Almanac is valid. */

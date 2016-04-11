@@ -18,7 +18,7 @@
 #include <libswiftnav/time.h>
 #include <libswiftnav/common.h>
 
-typedef struct {
+typedef struct __attribute__((packed)) {
   double tgd;
   double crs, crc, cuc, cus, cic, cis;
   double dn, m0, ecc, sqrta, omega0, omegadot, w, inc, inc_dot;
@@ -28,7 +28,7 @@ typedef struct {
   u8 iode;
 } ephemeris_kepler_t;
 
-typedef struct {
+typedef struct __attribute__((packed)) {
   double pos[3];
   double rate[3];
   double acc[3];
@@ -38,7 +38,7 @@ typedef struct {
   double a_gf1;
 } ephemeris_xyz_t;
 
-typedef struct {
+typedef struct __attribute__((packed)) {
   gnss_signal_t sid;
   gps_time_t toe;
   float ura;
